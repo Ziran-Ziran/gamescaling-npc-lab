@@ -5,6 +5,7 @@ import subprocess
 import threading
 import time
 from pathlib import Path, PureWindowsPath
+from controller.configuration import wsl_configuration
 MAX_LINE = 24 * 1024 * 1024
 
 def windows_to_wsl(path):
@@ -13,11 +14,15 @@ def windows_to_wsl(path):
  return '/mnt/' + p.drive[0].lower() + '/' + '/'.join(p.parts[1:])
 
 class WSLBridge:
- def __init__(self, worker_path=None, *, distro='Ubuntu', repo='/home/ziran/gamescaling-lab/GameScaling', python='/home/ziran/gamescaling-lab/.venv/bin/python', command=None, timeout=10):
+ def __init__(self, worker_path=None, *, distro=None, repo=None, python=None, command=None, timeout=10):
+  if command is None:
+   distro, repo, python = wsl_configuration(distro=distro, repo=repo, python=python)
+   command = ['wsl.exe','-d',distro,'--',python,windows_to_wsl(worker_path or str(Path(__file__).with_name('policy_worker.py'))),'--repo',repo]
+   self._distro = distro
+  else:
+   self._distro = None
   self._lock = threading.Lock(); self._queue = queue.Queue(); self._id = 0; self.closed = False
-  self._distro = distro if command is None else None
   self._writer = None
-  command = command or ['wsl.exe','-d',distro,'--',python,windows_to_wsl(worker_path or str(Path(__file__).with_name('policy_worker.py'))),'--repo',repo]
   self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=None)
   self._reader = threading.Thread(target=self._read, daemon=True); self._reader.start()
   try:

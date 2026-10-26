@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -24,14 +25,14 @@ class BackendTests(unittest.TestCase):
         bridge.assert_called_once_with(timeout=15)
         self.assertEqual(backends.backend_target()['base_url'], 'http://127.0.0.1:8000/v1')
 
-    def test_cloud_uses_windows_python_fixed_repo_and_loopback_tunnel(self):
-        with patch.object(backends, 'WSLBridge') as bridge:
+    def test_cloud_uses_windows_python_configured_repo_and_loopback_tunnel(self):
+        with patch.dict(os.environ, {'GAMESCALING_WINDOWS_CLIENT_REPO': r'D:\clients\GameScaling'}), patch.object(backends, 'WSLBridge') as bridge:
             backends.create_bridge('cloud')
         args = bridge.call_args.kwargs
         self.assertEqual(args['timeout'], 15)
         self.assertEqual(args['command'], [sys.executable, '-u',
             str(Path(backends.__file__).with_name('policy_worker.py')),
-            '--repo', r'\\wsl.localhost\Ubuntu\home\ziran\gamescaling-lab\GameScaling',
+            '--repo', r'D:\clients\GameScaling',
             '--base-url', 'http://127.0.0.1:18080/v1'])
         self.assertEqual(backends.backend_target('cloud')['model_root'], 'THUSI-Lab/GameScaling-9B-S3')
 

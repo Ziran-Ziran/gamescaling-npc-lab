@@ -10,7 +10,7 @@ from unittest.mock import patch
 from controller import evaluate_saved as ev
 
 HAS_OFFICIAL = importlib.util.find_spec('gamescaling') is not None
-NEEDS_OFFICIAL = 'Official gamescaling package required; run WSL tests with PYTHONPATH=/home/ziran/gamescaling-lab/GameScaling:.'
+NEEDS_OFFICIAL = 'Official gamescaling package required; add your own client checkout to PYTHONPATH.'
 
 
 class SavedEvaluationTests(unittest.TestCase):

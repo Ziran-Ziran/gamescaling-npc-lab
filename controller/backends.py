@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 
 from controller.wsl_bridge import WSLBridge
+from controller.configuration import windows_client_repository
 
 BACKENDS = ('local', 'cloud')
 _TARGETS = {
@@ -11,7 +12,6 @@ _TARGETS = {
     'cloud': {'backend': 'cloud', 'base_url': 'http://127.0.0.1:18080/v1',
               'model_id': 'gamescaling', 'model_root': 'THUSI-Lab/GameScaling-9B-S3'},
 }
-_WINDOWS_REPO = r'\\wsl.localhost\Ubuntu\home\ziran\gamescaling-lab\GameScaling'
 
 
 def backend_target(backend='local'):
@@ -25,7 +25,7 @@ def create_bridge(backend='local', *, timeout=15):
     if backend == 'local':
         return WSLBridge(timeout=timeout)
     return WSLBridge(command=[sys.executable, '-u',
-        str(Path(__file__).with_name('policy_worker.py')), '--repo', _WINDOWS_REPO,
+        str(Path(__file__).with_name('policy_worker.py')), '--repo', windows_client_repository(),
         '--base-url', target['base_url']], timeout=timeout)
 
 

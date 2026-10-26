@@ -15,6 +15,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from controller.configuration import evaluation_repository
 
 NOOP = '<|action_start|>0 0 0 ; ; ; ; ; ; <|action_end|>'
 INSTRUCTIONS = {
@@ -114,10 +115,7 @@ def summarize(rows):
     return out
 
 
-def main():
-    import requests
-    from PIL import Image
-    from gamescaling.policy import PolicyConfig, encode_image, finalize
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image', default='inputs/genshin_640.png')
     parser.add_argument('--output', default='output/capability-eval')
@@ -128,9 +126,22 @@ def main():
     parser.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
     parser.add_argument('--controls', action='store_true', help='Canonical W/S and official Doom; use --repeats 3 for 9 requests')
     parser.add_argument('--doom-defaults', action='store_true', help='Only Doom, official temperature=1/reasoning=true defaults; use --max-tokens 2048')
-    parser.add_argument('--official-repo', default='/home/ziran/gamescaling-lab/GameScaling')
-    args = parser.parse_args()
+    parser.add_argument('--official-repo', help='Client repository on this OS; defaults to GAMESCALING_CLIENT_REPO')
+    args = parser.parse_args(argv)
     args.controls = args.controls or args.doom_defaults
+    if args.controls:
+        try:
+            args.official_repo = evaluation_repository(args.official_repo)
+        except ValueError as error:
+            parser.error(str(error))
+    return args
+
+
+def main():
+    args = parse_args()
+    import requests
+    from PIL import Image
+    from gamescaling.policy import PolicyConfig, encode_image, finalize
     output = Path(args.output) / datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     output.mkdir(parents=True, exist_ok=False)
     session = requests.Session()

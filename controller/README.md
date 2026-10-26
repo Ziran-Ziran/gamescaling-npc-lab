@@ -31,7 +31,35 @@ python -m unittest discover -s tests -v
 
 ## 接入前的限制
 
-当前代码仍有原实验机器的 WSL 用户和目录默认值，集中在桥接、后端和评估入口。换电脑必须检查实际路径；公开仓库不承诺直接运行模型链路。GPU 推理运行时、官方客户端、权重、云机器、隧道与凭据需要独立配置，仓库不包含这些资源。
+启动推理前，先在当前终端配置本机路径。WSL 本地后端需要前三项，Windows 运行的 cloud worker 只需要第四项；保存画面的控制对照评估另用第五项。
+
+| 环境变量 | 用途与路径格式 |
+|---|---|
+| `GAMESCALING_WSL_DISTRO` | 本机实际安装的 WSL 发行版名称 |
+| `GAMESCALING_WSL_CLIENT_REPO` | WSL 内客户端仓库的绝对 Linux 路径 |
+| `GAMESCALING_WSL_PYTHON` | WSL 内 Python 解释器的绝对 Linux 路径 |
+| `GAMESCALING_WINDOWS_CLIENT_REPO` | Windows worker 可读的客户端仓库，使用绝对盘符路径或 UNC 路径 |
+| `GAMESCALING_CLIENT_REPO` | 控制对照评估使用的客户端仓库，使用运行评估程序的操作系统路径；`--official-repo` 优先于此变量 |
+
+PowerShell 示例仅演示格式，请先核实并替换为自己机器的值：
+
+```powershell
+$env:GAMESCALING_WSL_DISTRO = 'Ubuntu'
+$env:GAMESCALING_WSL_CLIENT_REPO = '/home/developer/src/GameScaling'
+$env:GAMESCALING_WSL_PYTHON = '/home/developer/venvs/game/bin/python'
+$env:GAMESCALING_WINDOWS_CLIENT_REPO = 'D:\clients\GameScaling'
+```
+
+在 WSL 里执行评估时，按实际路径配置，例如：
+
+```bash
+export GAMESCALING_CLIENT_REPO=/home/developer/src/GameScaling
+python -m controller.evaluate_saved --help
+```
+
+环境变量在创建桥接时读取，修改后无需重新导入模块。程序级 `WSLBridge(distro=..., repo=..., python=...)` 显式参数优先于环境变量；空的显式值会报错，不会悄悄回退。`.env` 文件不会自动加载。缺失、空白或路径格式错误会提前报出变量名称，不会启动推理进程；检查只验证配置格式，目录存在、解释器依赖与服务可用性仍需在目标机器验证。
+
+旧版本依赖默认个人目录的启动方式需要迁移到上述显式配置。GPU 推理运行时、官方客户端、权重、云机器、隧道与凭据仍需独立准备，仓库不包含这些资源。
 
 现有端点固定为本地回环地址，不应为接入方便直接去掉校验或开放公网服务。云端服务脚本含 `--trust-remote-code`，正式运行前应审查所选上游版本及远程代码。
 
@@ -43,4 +71,4 @@ python -m unittest discover -s tests -v
 
 本地输出默认位于忽略的 `output/local-control` 下，可能包括截图、原始模型输出、窗口信息和运行日志。分享时先脱敏并审查内容，不直接上传整包。
 
-跨电脑配置化、独立上游依赖记录与完整集成验收是后续工作；详见 [开发指南](../docs/development.md) 和 [路线图](../docs/roadmap.md)。
+跨电脑配置与 JSONL 通信已有离线回归测试；独立上游依赖记录和真实两台机器的完整模型集成仍需验收。详见 [开发指南](../docs/development.md) 和 [路线图](../docs/roadmap.md)。
