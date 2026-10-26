@@ -134,6 +134,15 @@ def main() -> int:
                     "同帧 gt 对照只使用 COLMAP 实际融合的帧；旧版 VO 的真值对齐发生在融合前，已单独标注。\n")
         print("\n" + dense)
 
+    orb = orbslam3_table(root)
+    if orb:
+        payload += "\n## ORB-SLAM3 因果 RGB-D 回放\n\n" + orb + "\n"
+        payload += ("\n时间为帧号/名义频率，离线节流不代表 UE 端到端延迟。"
+                    "ATE 为原生即时 Twc 落盘后按连续段评分；多图/多段不拼接，详见各运行 orbslam3_eval.json。"
+                    "地图为异步稀疏快照，不代表重载定位验收。内部诊断行的开销和调度会改变，不能作为实时性能成绩；"
+                    "无重置入口事件时重置次数为未知，文字日志无消息不能当成零次。\n")
+        print("\n" + orb)
+
     out = root / "comparison.md"
     out.write_text(payload, encoding="utf-8")
     (root / "comparison.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
@@ -218,6 +227,45 @@ def dense_table(root):
             cells.append(str(value))
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines)
+
+
+def orbslam3_table(root):
+    columns = [('session', '会话'), ('run', '运行'), ('pace', '节流 Hz'),
+               ('frames', '有效/输入'), ('coverage', '覆盖率'), ('maps', '图数'),
+               ('segments', '连续段'), ('longest_invalid_run', '最长失效帧段'),
+               ('resets', '活动图/全局重置'), ('p50', 'tracking p50 ms'),
+               ('p95', 'tracking p95 ms'), ('processing_fps', '含读图吞吐 FPS'),
+               ('rigid', '刚体 ATE m'), ('sim3', 'Sim(3) ATE m'),
+               ('sparse_snapshot_points', '稀疏快照点数')]
+    rows = []
+    for path in sorted(root.glob('orbslam3-*/replay-*/orbslam3_eval.json')):
+        data = json.loads(path.read_text(encoding='utf-8'))
+        row = dict(data)
+        row['session'] = data.get('session') or '独立输入（未评分）'
+        row.update(run=path.parent.parent.name + '/' + path.parent.name,
+                   pace=data['native']['pace_hz'],
+                   frames=f"{data['valid_frames']}/{data['total_frames']}",
+                   maps=len(data['observed_map_ids']), segments=len(data['segments']),
+                   resets=(f"{data['active_map_resets']}/{data['system_resets']}"
+                           if data.get('active_map_resets') is not None and data.get('system_resets') is not None else '未知'),
+                   p50=data['timing']['tracking_ms']['p50'],
+                   p95=data['timing']['tracking_ms']['p95'],
+                   rigid=data.get('rigid_ate_rmse_m', '逐段见报告'),
+                   sim3=data.get('sim3_ate_rmse_m', '逐段见报告'))
+        if data['native'].get('instrumented'):
+            row['run'] += '（内部诊断）'
+        if data.get('ground_truth_usage') == 'none':
+            row['rigid'] = row['sim3'] = '未做真值评分'
+        rows.append(row)
+    if not rows:
+        return ''
+    lines = ['| ' + ' | '.join(label for _, label in columns) + ' |',
+             '|' + '|'.join('---' for _ in columns) + '|']
+    for row in rows:
+        values = [row.get(key, '-') for key, _ in columns]
+        lines.append('| ' + ' | '.join(f'{v:.4g}' if isinstance(v, float) else str(v)
+                                       for v in values) + ' |')
+    return '\n'.join(lines)
 
 
 if __name__ == "__main__":
