@@ -2,7 +2,7 @@
 
 ## 离线环境
 
-推荐 Python 3.12；当前依赖固定版本来源于项目现有可用环境，不表示任意平台组合已验证。先在当前机器确认 Git、Python 路径，再创建虚拟环境并安装 `requirements/dev.txt`。控制器和 SLAM 可分别安装对应依赖文件。
+推荐 Python 3.12；依赖以项目现有环境为起点，并更新已知有安全修复的版本，不表示任意平台组合已验证。先在当前机器确认 Git、Python 路径，再创建虚拟环境并安装 `requirements/dev.txt`。控制器和 SLAM 可分别安装对应依赖文件。
 
 ```powershell
 python -m unittest discover -s tests -v
