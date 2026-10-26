@@ -1,4 +1,4 @@
 # Offline controller development; inference runtimes are installed separately.
 numpy==2.4.4
-Pillow==12.2.0
+Pillow==13.0.0
 requests==2.32.5
