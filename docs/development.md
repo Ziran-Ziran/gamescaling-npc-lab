@@ -11,7 +11,7 @@ python scripts/check_repository.py
 git diff --check
 ```
 
-这些命令只做离线验证。部分控制器测试依赖官方 `gamescaling` 包，未安装时明确 skip；CI 不替代官方模型集成测试。CI 分别运行 Windows 控制器测试与 Linux SLAM 几何测试，不编译 UE、不运行游戏或模型。
+这些命令只做离线验证。部分控制器测试依赖官方 `gamescaling` 包，未安装时明确 skip；SLAM 中有一项可选的真实会话回归，未提供本地数据时跳过。CI 不替代官方模型或真实数据集成测试。CI 分别运行 Windows 控制器测试与 Linux SLAM 几何测试，不编译 UE、不运行游戏或模型。
 
 ## UE5 采集开发
 
