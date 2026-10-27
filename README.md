@@ -1,3 +1,24 @@
+# GameScaling NPC Lab — 已停止维护 / Superseded
+
+本混合实验仓库已于 2026-10-26 拆分为两个独立项目。自 2026-10-27 起，本仓库仅保留历史源码、提交、Issue 和 PR 作为来源记录，归档后只读。后续开发、使用说明和问题反馈请前往对应新仓库：
+
+| 研究方向 | 当前维护的仓库 |
+|---|---|
+| GameScaling 模型训练、多模态输入与低延迟游戏决策 | [gamescaling-agent-lab](https://github.com/Ziran-Ziran/gamescaling-agent-lab) |
+| UE5 仿真、语义空间理解、视觉几何与路径规划 | [sitp-ue5-spatial-lab](https://github.com/Ziran-Ziran/sitp-ue5-spatial-lab) |
+
+新项目的安装、测试与贡献步骤以各自 README 为准。请在新仓库创建 Issue 和 PR；旧仓库的未关闭条目保留为历史记录，不表示仍在此处理。
+
+两个项目均记录了固定来源提交 `46e75f16af30d5eb52ec6833a6dff3b3703ddc61`。迁移范围与后续补丁处理规则见 [GameScaling 迁移说明](https://github.com/Ziran-Ziran/gamescaling-agent-lab/blob/main/docs/migration.md) 和 [UE5 空间研究迁移说明](https://github.com/Ziran-Ziran/sitp-ue5-spatial-lab/blob/main/docs/migration.md)。本次停用不自动同步后续改动，也不表示旧 Issue 或草稿 PR 已完成或验收。
+
+This repository has been superseded by the two projects above and is retained as a read-only historical source. Please use their documentation and open new issues or pull requests there.
+
+---
+
+## 历史 README（停止维护，仅供追溯）
+
+以下内容描述分拆前的工程状态，其中的安装命令、路线图和协作入口不再作为当前使用指南。
+
 # GameScaling NPC Lab
 
 面向游戏引擎中自主 AI-NPC 的研究与工程实验：将视觉 SLAM 的空间定位、地图记忆与 GameScaling 动作决策逐步连接，构建“观察 → 定位与建图 → 决策 → 行动 → 反馈”的闭环。
